@@ -6,16 +6,8 @@
 
 #define LCD_PUT_PIXEL(X,Y,COLOR) Fb_ptr[(Y)][(X)] = (unsigned short)(COLOR)
 
-#define SIZE_OF_BUMB  21
+#define SIZE_OF_BUMB  10
 
-#define CLEAR_COOKIE {\
-	int i,j;\
-	for ( i = 176 ; i < 220 ; i ++)\
-	{\
-		for( j = 20; j < 76 ; j ++ )\
-			LCD_PUT_PIXEL(j, i ,fullscreen_buffer[i][j]);\
-	}\
-}
 //main.c
 void game_over(void);
 
@@ -27,7 +19,7 @@ void Uart_Init(int baud);
 void Uart_Printf(char *fmt,...);
 void Uart_Send_String(char *pt);
 void Uart_Send_Byte(int data);
-char Uart_Get_Char(void);
+//char Uart_Get_Char(void);
 
 //lcd_init.c
 void Graphic_Init(void);
@@ -45,10 +37,7 @@ void Lcd_Printf(int x, int y, int color, unsigned int (* buffer)[480],char *fmt,
 void Lcd_Puts(int x, int y, int color, unsigned int (* buffer)[480], char *str);
 void Lcd_Puts_big(int x, int y, int color, unsigned int (* buffer)[480], char *str);
 				
-void Lcd_Make_cookie_Buffer(int x, int y, const unsigned char *fp);
 void Lcd_Make_fullscreen_Buffer (int x, int y, const unsigned char *fp);
-void Lcd_Make_slide_Buffer (int x, int y, const unsigned char *fp);
-void Print_cookie(void);
 
 //key.c
 void SWITCH_Port_Init(void);

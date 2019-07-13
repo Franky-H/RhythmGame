@@ -77,6 +77,18 @@ extern "C" {
 #define rDMASKTRIG1 (*(volatile unsigned *)0x4b000120)	//DMA 1 Mask trigger
 #define rDMAREQSEL1 (*(volatile unsigned *)0x4b000124)	//DMA 1  REQUESET SELECTION
 
+
+
+/*add*/
+#define rDISRC2     (*(volatile unsigned *)0x4b000080)	//DMA 2 Initial source
+#define rDISRCC2    (*(volatile unsigned *)0x4b000084)	//DMA 2 Initial source control
+#define rDIDST2     (*(volatile unsigned *)0x4b000088)	//DMA 2 Initial Destination
+#define rDIDSTC2    (*(volatile unsigned *)0x4b00008c)	//DMA 2 Initial Destination control
+#define rDCON2      (*(volatile unsigned *)0x4b000090)	//DMA 2 Control
+#define rDMASKTRIG2 (*(volatile unsigned *)0x4b0000a0)	//DMA 2 Mask trigger
+
+
+
 // CLOCK & POWER MANAGEMENT
 #define rLOCKTIME   (*(volatile unsigned *)0x4c000000)	//PLL lock time counter
 #define rMPLLCON    (*(volatile unsigned *)0x4c000004)	//MPLL Control

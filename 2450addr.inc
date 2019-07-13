@@ -76,10 +76,6 @@
 	.equ 	GPHCON,  	0x56000070     /*Port H control*/
 	.equ 	GPHDAT,  	0x56000074     /*Port H data*/
 	.equ 	GPHUDP,   	0x56000078     /*Pull-up control H*/
-	.equ  GPBSEL, 0x560001C        /* I2S SEl Port*/
-
-
-	
 
 	/* Miscellaneous register*/
 	.equ	MISCCR,  	0x56000080     /*Miscellaneous control*/

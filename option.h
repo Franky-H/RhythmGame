@@ -46,4 +46,9 @@
 
 #define NULL 0
 
+#define MEGA	(1000000)
+#define FIN		(16934400)
+
+
+
 #endif

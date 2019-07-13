@@ -10,6 +10,10 @@ extern int position;			//current cookie height
 extern int num_life;			//life count
 extern int score;				//current score
 
+extern int Miss;
+extern int Perfect;
+extern int my_clear;
+
 extern unsigned short (* Fb_ptr)[480];	//lcd0 buffer
 
 extern int start_x1;			//block1 current Xposition
@@ -35,9 +39,6 @@ extern int level;		//current game level var
 extern char ptr[10][10];	//current life string
 
 extern int high_low;
-
-
-
 
 
 

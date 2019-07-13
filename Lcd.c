@@ -16,8 +16,26 @@
 #include "global_var.h"
 
 #include "./fonts/ENG8X16.H"
+#include "./fonts/HAN16X16.H"
+#include "./fonts/HANTABLE.H"
+
+
+
+
+static unsigned char _first[]={0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19 };
+static unsigned char _middle[]={0,0,0,1,2,3,4,5,0,0,6,7,8,9,10,11,0,0,12,13,14,15,16,17,0,0,18,19,20,21};
+static unsigned char _last[]={0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,0,17,18,19,20,21,22,23,24,25,26,27};
+static unsigned char cho[]={0,0,0,0,0,0,0,0,0,1,3,3,3,1,2,4,4,4,2,1,3,0};
+static unsigned char cho2[]={0,5,5,5,5,5,5,5,5,6,7,7,7,6,6,7,7,7,6,6,7,5};
+static unsigned char jong[]={0,0,2,0,2,1,2,1,2,3,0,2,1,3,3,1,2,1,3,3,1,1};
+#define LCD_XSIZE 		(480)	
+#define LCD_YSIZE 		(272)
+
+
 
 #define COPY(A,B) for(loop=0;loop<32;loop++) *(B+loop)=*(A+loop);
+#define OR(A,B) for(loop=0;loop<32;loop++) *(B+loop)|=*(A+loop);
+
 
 static unsigned short bfType;
 static unsigned int bfSize;
@@ -30,6 +48,318 @@ static unsigned int Fbuf[2] = {0x33800000, 0x33c00000};
 unsigned int fullscreen_buffer[272][480]; 	//background image buffer
 unsigned int cookie_buffer[44][44]; 		//cookie image buffer
 unsigned int slide_buffer[22][56];			//slide image buffer
+unsigned int clear_buffer[272][100];
+
+void Lcd_Printf1(int x, int y, int color, int bkcolor, int zx, int zy, char *fmt,...);
+void Lcd_Put_Rvs_Pixel(int y,int x,int color)
+{
+    y = LCD_YSIZE-y;
+	Fb_ptr[y][x] = (unsigned short int)color;	
+}
+void Lcd_Eng_Putch(int x,int y,int color,int bkcolor,int data, int zx, int zy)
+{
+	unsigned offset,loop;
+	unsigned char xs,ys;
+	unsigned char temp[32];
+	unsigned char bitmask[]={128,64,32,16,8,4,2,1};     
+
+	offset=(unsigned)(data*16);
+	COPY(eng8x16+offset,temp);
+
+	for(ys=0;ys<16;ys++)
+	{
+		for(xs=0;xs<8;xs++)
+		{
+			if(temp[ys]&bitmask[xs])
+			{
+				if( (zx==1)&&(zy==1) ) {
+                    //Lcd_Put_Pixel(x+xs,y+ys,color);
+                    Lcd_Put_Rvs_Pixel(x+xs,y+ys,color);
+                }
+				else if( (zx==2)&&(zy==1) )
+				{
+					//Lcd_Put_Pixel(x+2*xs,y+ys,color);
+					//Lcd_Put_Pixel(x+2*xs+1,y+ys,color);
+					Lcd_Put_Rvs_Pixel(x+2*xs,y+ys,color);
+					Lcd_Put_Rvs_Pixel(x+2*xs+1,y+ys,color);
+				}
+				else if( (zx==1)&&(zy==2) )
+				{
+					//Lcd_Put_Pixel(x+xs,y+2*ys,color);
+					//Lcd_Put_Pixel(x+xs,y+2*ys+1,color);
+					Lcd_Put_Rvs_Pixel(x+xs,y+2*ys,color);
+					Lcd_Put_Rvs_Pixel(x+xs,y+2*ys+1,color);
+				}
+				else if( (zx==2)&&(zy==2) )
+				{
+					//Lcd_Put_Pixel(x+2*xs,y+2*ys+1,color);
+					//Lcd_Put_Pixel(x+2*xs+1,y+2*ys,color);
+					//Lcd_Put_Pixel(x+2*xs,y+2*ys,color);
+					//Lcd_Put_Pixel(x+2*xs+1,y+2*ys+1,color);
+					Lcd_Put_Rvs_Pixel(x+2*xs,y+2*ys+1,color);
+					Lcd_Put_Rvs_Pixel(x+2*xs+1,y+2*ys,color);
+					Lcd_Put_Rvs_Pixel(x+2*xs,y+2*ys,color);
+					Lcd_Put_Rvs_Pixel(x+2*xs+1,y+2*ys+1,color);
+				}
+			} 
+			else
+			{
+				if( (zx==1)&&(zy==1) ) {
+                    //Lcd_Put_Pixel(x+xs,y+ys,bkcolor);
+                    Lcd_Put_Rvs_Pixel(x+xs,y+ys,bkcolor);
+                }
+				else if( (zx==2)&&(zy==1) )
+				{
+					//Lcd_Put_Pixel(x+2*xs,y+ys,bkcolor);
+					//Lcd_Put_Pixel(x+2*xs+1,y+ys,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+2*xs,y+ys,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+2*xs+1,y+ys,bkcolor);
+				}
+				else if( (zx==1)&&(zy==2) )
+				{
+					//Lcd_Put_Pixel(x+xs,y+2*ys,bkcolor);
+					//Lcd_Put_Pixel(x+xs,y+2*ys+1,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+xs,y+2*ys,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+xs,y+2*ys+1,bkcolor);
+				}
+				else if( (zx==2)&&(zy==2) )
+				{
+					//Lcd_Put_Pixel(x+2*xs,y+2*ys+1,bkcolor);
+					//Lcd_Put_Pixel(x+2*xs+1,y+2*ys,bkcolor);
+					//Lcd_Put_Pixel(x+2*xs,y+2*ys,bkcolor);
+					//Lcd_Put_Pixel(x+2*xs+1,y+2*ys+1,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+2*xs,y+2*ys+1,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+2*xs+1,y+2*ys,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+2*xs,y+2*ys,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+2*xs+1,y+2*ys+1,bkcolor);
+				}	   	
+			} 
+		}
+	}
+}
+
+void Lcd_Han_Putch(int x,int y,int color,int bkcolor, int data, int zx, int zy)
+{
+	unsigned int first,middle,last;	
+	unsigned int offset,loop;
+	unsigned char xs,ys;
+	unsigned char temp[32];
+	unsigned char bitmask[]={128,64,32,16,8,4,2,1};     
+
+	first=(unsigned)((data>>8)&0x00ff);
+	middle=(unsigned)(data&0x00ff);
+	offset=(first-0xA1)*(0x5E)+(middle-0xA1);
+	first=*(HanTable+offset*2);
+	middle=*(HanTable+offset*2+1);
+	data=(int)((first<<8)+middle);    
+
+	first=_first[(data>>10)&31];
+	middle=_middle[(data>>5)&31];
+	last=_last[(data)&31];     
+
+	if(last==0)
+	{
+		offset=(unsigned)(cho[middle]*640); 
+		offset+=first*32;
+		COPY(han16x16+offset,temp);
+
+		if(first==1||first==24) offset=5120;  
+		else offset=5120+704;
+		offset+=middle*32;
+		OR(han16x16+offset,temp);
+	}
+	else 
+	{
+		offset=(unsigned)(cho2[middle]*640); 
+		offset+=first*32;
+		COPY(han16x16+offset,temp);
+
+		if(first==1||first==24) offset=5120+704*2; 
+		else offset=5120+704*3;
+		offset+=middle*32;
+		OR(han16x16+offset,temp);
+
+		offset=(unsigned)(5120+2816+jong[middle]*896);
+		offset+=last*32;
+		OR(han16x16+offset,temp);
+	}
+
+	for(ys=0;ys<16;ys++)
+	{
+		for(xs=0;xs<8;xs++)
+		{
+			if(temp[ys*2]&bitmask[xs])
+			{
+				if( (zx==1)&&(zy==1) ) {
+                    //Lcd_Put_Pixel(x+xs,y+ys,color);
+                    Lcd_Put_Rvs_Pixel(x+xs,y+ys,color);
+                }
+				else if( (zx==2)&&(zy==1) )
+				{
+					//Lcd_Put_Pixel(x+2*xs,y+ys,color);
+					//Lcd_Put_Pixel(x+2*xs+1,y+ys,color);
+					Lcd_Put_Rvs_Pixel(x+2*xs,y+ys,color);
+					Lcd_Put_Rvs_Pixel(x+2*xs+1,y+ys,color);
+				}
+				else if( (zx==1)&&(zy==2) )
+				{
+					//Lcd_Put_Pixel(x+xs,y+2*ys,color);
+					//Lcd_Put_Pixel(x+xs,y+2*ys+1,color);
+					Lcd_Put_Rvs_Pixel(x+xs,y+2*ys,color);
+					Lcd_Put_Rvs_Pixel(x+xs,y+2*ys+1,color);
+				}
+				else if( (zx==2)&&(zy==2) )
+				{
+					//Lcd_Put_Pixel(x+2*xs,y+2*ys+1,color);
+					//Lcd_Put_Pixel(x+2*xs+1,y+2*ys,color);
+					//Lcd_Put_Pixel(x+2*xs,y+2*ys,color);
+					//Lcd_Put_Pixel(x+2*xs+1,y+2*ys+1,color);
+					Lcd_Put_Rvs_Pixel(x+2*xs,y+2*ys+1,color);
+					Lcd_Put_Rvs_Pixel(x+2*xs+1,y+2*ys,color);
+					Lcd_Put_Rvs_Pixel(x+2*xs,y+2*ys,color);
+					Lcd_Put_Rvs_Pixel(x+2*xs+1,y+2*ys+1,color);
+				}
+			}
+			else
+			{
+				if( (zx==1)&&(zy==1) ) {
+                    //Lcd_Put_Pixel(x+xs,y+ys,bkcolor);
+                    Lcd_Put_Rvs_Pixel(x+xs,y+ys,bkcolor);
+                }
+				else if( (zx==2)&&(zy==1) )
+				{
+					//Lcd_Put_Pixel(x+2*xs,y+ys,bkcolor);
+					//Lcd_Put_Pixel(x+2*xs+1,y+ys,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+2*xs,y+ys,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+2*xs+1,y+ys,bkcolor);
+				}
+				else if( (zx==1)&&(zy==2) )
+				{
+					//Lcd_Put_Pixel(x+xs,y+2*ys,bkcolor);
+					//Lcd_Put_Pixel(x+xs,y+2*ys+1,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+xs,y+2*ys,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+xs,y+2*ys+1,bkcolor);
+				}
+				else if( (zx==2)&&(zy==2) )
+				{
+					//Lcd_Put_Pixel(x+2*xs,y+2*ys+1,bkcolor);
+					//Lcd_Put_Pixel(x+2*xs+1,y+2*ys,bkcolor);
+					//Lcd_Put_Pixel(x+2*xs,y+2*ys,bkcolor);
+					//Lcd_Put_Pixel(x+2*xs+1,y+2*ys+1,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+2*xs,y+2*ys+1,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+2*xs+1,y+2*ys,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+2*xs,y+2*ys,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+2*xs+1,y+2*ys+1,bkcolor);
+				}	   	
+			}
+		}
+
+		for(xs=0;xs<8;xs++)
+		{
+			if(temp[ys*2+1]&bitmask[xs])
+			{
+				if( (zx==1)&&(zy==1) ) {
+                    //Lcd_Put_Pixel(x+xs+8,y+ys,color);
+                    Lcd_Put_Rvs_Pixel(x+xs+8,y+ys,color);
+                }
+				else if( (zx==2)&&(zy==1) ){
+                    //Lcd_Put_Pixel(x+2*(xs+8),y+ys,color);
+                    //Lcd_Put_Pixel(x+2*(xs+8)+1,y+ys,color);
+                    Lcd_Put_Rvs_Pixel(x+2*(xs+8),y+ys,color);
+                    Lcd_Put_Rvs_Pixel(x+2*(xs+8)+1,y+ys,color);
+                }
+                else if( (zx==1)&&(zy==2) ){
+                    //Lcd_Put_Pixel(x+(xs+8),y+2*ys,color);
+                    //Lcd_Put_Pixel(x+(xs+8),y+2*ys+1,color);
+                    Lcd_Put_Rvs_Pixel(x+(xs+8),y+2*ys,color);
+                    Lcd_Put_Rvs_Pixel(x+(xs+8),y+2*ys+1,color);
+                }
+                else if( (zx==2)&&(zy==2) ){
+                    //Lcd_Put_Pixel(x+2*(xs+8),y+2*ys+1,color);
+                    //Lcd_Put_Pixel(x+2*(xs+8)+1,y+2*ys,color);
+                    //Lcd_Put_Pixel(x+2*(xs+8),y+2*ys,color);
+                    //Lcd_Put_Pixel(x+2*(xs+8)+1,y+2*ys+1,color);
+                    Lcd_Put_Rvs_Pixel(x+2*(xs+8),y+2*ys+1,color);
+                    Lcd_Put_Rvs_Pixel(x+2*(xs+8)+1,y+2*ys,color);
+                    Lcd_Put_Rvs_Pixel(x+2*(xs+8),y+2*ys,color);
+                    Lcd_Put_Rvs_Pixel(x+2*(xs+8)+1,y+2*ys+1,color);
+                }
+			}
+
+			else
+			{	   	
+				if( (zx==1)&&(zy==1) ) {
+                    //Lcd_Put_Pixel(x+xs+8,y+ys,bkcolor);
+                    Lcd_Put_Rvs_Pixel(x+xs+8,y+ys,bkcolor);
+                }
+				else if( (zx==2)&&(zy==1) )
+				{
+					//Lcd_Put_Pixel(x+2*(xs+8),y+ys,bkcolor);
+					//Lcd_Put_Pixel(x+2*(xs+8)+1,y+ys,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+2*(xs+8),y+ys,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+2*(xs+8)+1,y+ys,bkcolor);
+				}
+				else if( (zx==1)&&(zy==2) )
+				{
+					//Lcd_Put_Pixel(x+(xs+8),y+2*ys,bkcolor);
+					//Lcd_Put_Pixel(x+(xs+8),y+2*ys+1,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+(xs+8),y+2*ys,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+(xs+8),y+2*ys+1,bkcolor);
+				}
+				else if( (zx==2)&&(zy==2) )
+				{
+					//Lcd_Put_Pixel(x+2*(xs+8),y+2*ys+1,bkcolor);
+					//Lcd_Put_Pixel(x+2*(xs+8)+1,y+2*ys,bkcolor);
+					//Lcd_Put_Pixel(x+2*(xs+8),y+2*ys,bkcolor);
+					//Lcd_Put_Pixel(x+2*(xs+8)+1,y+2*ys+1,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+2*(xs+8),y+2*ys+1,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+2*(xs+8)+1,y+2*ys,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+2*(xs+8),y+2*ys,bkcolor);
+					Lcd_Put_Rvs_Pixel(x+2*(xs+8)+1,y+2*ys+1,bkcolor);
+				}	   	
+			}
+		}
+	}
+}
+
+
+
+void Lcd_Puts1(int x, int y, int color, int bkcolor, char *str, int zx, int zy)
+{
+     unsigned data;
+   
+     while(*str)
+     {
+        data=*str++;
+        if(data>=128) 
+        { 
+             data*=256;
+             data|=*str++;
+             Lcd_Han_Putch(x, y, color, bkcolor, (int)data, zx, zy);
+             x+=zx*16;
+        }
+        else 
+        {
+             Lcd_Eng_Putch(x, y, color, bkcolor, (int)data, zx, zy);
+             x+=zx*8;
+        }
+     } 
+} 
+
+
+
+void Lcd_Printf1(int x, int y, int color, int bkcolor,int zx, int zy, char *fmt,...)
+{
+	va_list ap;
+	char string[256];
+
+	va_start(ap,fmt);
+	vsprintf(string,fmt,ap);
+	Lcd_Puts1(x, y, color, bkcolor, string, zx, zy);
+	va_end(ap);
+}
+
+
 
 void Lcd_Copy(unsigned int from, unsigned int to)
 {
@@ -209,32 +539,4 @@ void Lcd_Puts_big(int x, int y, int color, unsigned int (* buffer)[480], char *s
 void Lcd_Make_fullscreen_Buffer (int x, int y, const unsigned char *fp)
 {
 	MAKE_BUFFER(fullscreen_buffer)
-}
-
-void Lcd_Make_cookie_Buffer (int x, int y, const unsigned char *fp)
-{
-	MAKE_BUFFER(cookie_buffer)
-}
-
-void Lcd_Make_slide_Buffer (int x, int y, const unsigned char *fp)
-{
-	MAKE_BUFFER(slide_buffer)
-}
-
-void Print_cookie()
-{
-	int i, j;
-	int x = 0;
-	int y = 0;
-
-	for ( i = 176 ; i < 220 ; i ++)
-	{
-		for( j = 20; j < 64 ; j ++ )
-		{
-			LCD_PUT_PIXEL(j, i ,(cookie_buffer[y][x]==0x0000 ? fullscreen_buffer[i][j] : cookie_buffer[y][x]));
-			x++;
-		}
-		x = 0;
-		y++;
-	}	
 }
